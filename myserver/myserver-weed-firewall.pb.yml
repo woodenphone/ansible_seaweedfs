@@ -1,0 +1,120 @@
+#!ansible-playbook -vv
+## myserver-weed-firewall.pb.yml
+## Setup firewall rules for seaweedfs on host:myserver
+## Author: Ctrl-S
+## Created: 2021-08-05
+## Modified: 2021-09-02
+
+## ! ! !
+## TODO: Test this playbook.
+## ! ! !
+---
+- name: 'myserver-weed-firewall'
+  hosts: myserver
+  become: yes
+  become_user: root
+  pre_tasks: # (Run sequentially before roles.)
+#
+## Firewall port setup for seaweedfs (firewalld)
+## https://docs.ansible.com/ansible/latest/collections/ansible/posix/firewalld_module.html
+# https://www.redhat.com/sysadmin/beginners-guide-firewalld
+## Allow access from localhost;
+## Allow access to read from LAN (RFC 1918 IPv4 addresses);
+## Deny access from all other IP addresses;
+    block: 
+      ## Apply multiple rules to all the ranges.
+      with_items:
+        ## (RFC 1918 IPv4 addresses).
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+
+      - name: 'Open port for filer readonly access (49301/tcp)'
+        ansible.posix.firewalld:
+          port: 49301/tcp
+          src: "{{ item }}"
+          permanent: yes
+          state: enabled
+
+      - name: 'Open port for filer readwrite access (8888/tcp)'
+        ansible.posix.firewalld:
+          port: 8888/tcp
+          src: "{{ item }}"
+          permanent: yes
+          state: enabled
+
+      - name: 'Open port for master (9333/tcp)'
+        ansible.posix.firewalld:
+          port: 9333/tcp
+          src: "{{ item }}"
+          permanent: yes
+          state: enabled
+
+      - name: 'Open ports for volumes (495xx/TCP)'
+        ansible.posix.firewalld:
+          port: "49500:49599/tcp"
+          src: "{{ item }}"
+          permanent: yes
+          state: enabled      
+
+      - name: 'Open RPC ports for volumes (595xx/TCP)'
+        ansible.posix.firewalld:
+          port: "59500:59599/tcp"
+          src: "{{ item }}"
+          permanent: yes
+          state: enabled      
+
+
+
+
+# #
+# ## Firewall port setup for seaweedfs (ufw)
+# ## https://docs.ansible.com/ansible/latest/collections/community/general/ufw_module.html#ansible-collections-community-general-ufw-module
+# ## Install: $ ansible-galaxy collection install community.general
+# ##
+# ## Allow access from localhost;
+# ## Allow access to read from LAN (RFC 1918 IPv4 addresses);
+# ## Deny access from all other IP addresses;
+# ## UNTESTED
+#     block: 
+#       ## Apply multiple rules to all the ranges.
+#       with_items:
+#         ## (RFC 1918 IPv4 addresses).
+#         - 10.0.0.0/8
+#         - 172.16.0.0/12
+#         - 192.168.0.0/16
+# #
+#       - name: 'Open port for filer readonly access (49301/tcp)'
+#         community.general.ufw:
+#           rule: allow
+#           port: 49301/tcp
+#           src: "{{ item }}"
+# #
+#       - name: 'Open port for filer readwrite access (8888/tcp)'
+#         community.general.ufw:
+#           rule: allow
+#           port: 8888/tcp
+#           src: "{{ item }}"
+# #
+#       - name: 'Open port for master (9333/tcp)'
+#         ansible.posix.firewalld:
+#           port: 9333/tcp
+#           src: "{{ item }}"
+#           permanent: yes
+#           state: enabled
+# #
+#     - name: 'Open RPC ports for volumes (595xx/TCP)'
+#       community.general.ufw:
+#           rule: allow
+#           src: "{{ item }}"
+#           port: '59500:59599/tcp'
+# #
+#       - name: 'Open RPC ports for volumes (595xx/TCP)'
+#         community.general.ufw:
+#           rule: allow
+#           port: "59500:59599/tcp"
+#           src: "{{ item }}"
+#
+  # roles:
+  # post_tasks: # (Run sequentially after roles.)
+

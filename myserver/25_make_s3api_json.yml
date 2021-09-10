@@ -1,0 +1,36 @@
+## 25_make_s3api_json.yml
+## Generate seaweedfs s3api config JSON from templates.
+---
+# - vars:
+  # ## Defaults if none set
+  # user: "FIXME_DEFAULT_VALUE.user"
+  # group: "FIXME_DEFAULT_VALUE.group"
+  # weed_conf_dir:  "FIXME_DEFAULT_VALUE.weed_conf_dir"
+  # s3json_admin_access_key: 'FIXME_DEFAULT_VALUE.s3json_admin_access_key'
+  # s3json_admin_secret_key: 'FIXME_DEFAULT_VALUE.s3json_admin_secret_key'
+
+  # s3json_readonly_access_key: 'FIXME_DEFAULT_VALUE.s3json_readonly_access_key'
+  # s3json_readonly_secret_key: 'FIXME_DEFAULT_VALUE.s3json_readonly_secret_key'
+
+  # s3json_myapp_access_key: 'FIXME_DEFAULT_VALUE.s3json_myapp_access_key'
+  # s3json_myapp_secret_key: 'FIXME_DEFAULT_VALUE.s3json_myapp_secret_key'
+
+- name: "s3json conf dir exists"
+  ansible.builtin.file:
+    state: 'directory'
+    owner: "{{ user }}"
+    group: "{{ group }}"
+    mode: 'u=rwx,g=rwx,o=rx'
+    path: "{{ weed_conf_dir }}"
+
+
+- name: "Generate s3_conf.json"
+  ansible.builtin.template:
+    src: "templates/s3_conf.json.j2"
+    dest: "{{weed_conf_dir}}/weed_s3api_users.json"
+    mode: "u=rw,g=r,o="
+    owner: "{{ user }}"
+    group: "{{ group }}"
+    mode: "u=rwx,g=rwx,o=" # Contains secrets.
+    backup: yes
+

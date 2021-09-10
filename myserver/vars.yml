@@ -1,0 +1,19 @@
+## vars.secret.yml
+## Created: 2021-01-23
+## Modified: 2021-09-02
+------
+## == Secret - S3 API Credentials ==
+## This is for hosting a S3-compatible API from your seaweedfs cluster.
+## Use secure randomly-generated values; e.g. via this command:
+## `$ < /dev/urandom tr -dc A-Za-z0-9 | head -c${1:-32};echo;`
+# SeaweedFS S3 API users:
+# admin (Admin, Read, List, Tagging, Write)
+s3json_admin_access_key: 'FIXME_DEFAULT_VALUE.s3json_admin_access_key'
+s3json_admin_secret_key: 'FIXME_DEFAULT_VALUE.s3json_admin_secret_key'
+# readonly (read,list)
+s3json_readonly_access_key: 'FIXME_DEFAULT_VALUE.s3json_readonly_access_key'
+s3json_readonly_secret_key: 'FIXME_DEFAULT_VALUE.s3json_readonly_secret_key'
+# myapp (Read, List, Tagging, Write)
+s3json_myapp_access_key: 'FIXME_DEFAULT_VALUE.s3json_myapp_access_key'
+s3json_myapp_secret_key: 'FIXME_DEFAULT_VALUE.s3json_myapp_secret_key'
+
