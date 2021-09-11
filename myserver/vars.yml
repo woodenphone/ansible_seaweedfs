@@ -1,6 +1,5 @@
 ## vars.yml
-------
-
+---
 rack: 'myserver'
 datacenter: 'mylan'
 

@@ -23,7 +23,7 @@
     weed_conf_dir: "/etc/seaweedfs/"
     binary: "/usr/local/bin/weed"
     logdir: "/var/log/weed"
-    workdir: "/etc/weed"
+    workdir: "/etc/seaweedfs"
 
     log_level: '3' ## Higher number is more verbose.
     # rack: 'myserver'
@@ -33,6 +33,7 @@
     weed_install_work_dir: "/var/seaweedfs/install_weed"
     # weed_latest_release: "2.64"
     ## https://github.com/chrislusf/seaweedfs/releases/download/2.52/linux_amd64_large_disk.tar.gz
+    ## https://github.com/chrislusf/seaweedfs/releases/download/2.67/linux_amd64_large_disk.tar.gz
     ## Check for latest version here: https://github.com/chrislusf/seaweedfs/releases/
 
     ## install_certgen_bin.yml
@@ -54,8 +55,7 @@
       - "weed_master_1"
       - "weed_filer_1"
       - "weed_s3api_1"
-      - "weed_mount_1"
-      - "weed_mount_2"
+      - "weed_mount_filerroot"
       - "weed_volume_1"
       - "weed_volume_2"
       - "weed_volume_3"
@@ -199,7 +199,7 @@
     - name: 'Copy over master.toml'
       ansible.builtin.copy:
         src: "files/master.toml"
-        dest: "/etc/seaweedfs/master.toml" # May contain secrets.
+        dest: "{{ weed_conf_dir }}/master.toml" # May contain secrets.
         mode: "u=rw,g=r,o=r"
         owner: "{{ user }}"
         group: "{{ group }}"
@@ -207,7 +207,7 @@
     - name: 'Copy over filer.toml'
       ansible.builtin.copy:
         src: "files/filer.toml"
-        dest: "/etc/seaweedfs/filer.toml" # May contain secrets.
+        dest: "{{ weed_conf_dir }}/filer.toml" # May contain secrets.
         mode: "u=rw,g=r,o="
         owner: "{{ user }}"
         group: "{{ group }}"
@@ -216,7 +216,7 @@
     - name: "Generate s3_conf.json"
       ansible.builtin.template:
         src: "templates/s3_conf.json.j2"
-        dest: "/etc/seaweedfs/weed_s3api_users.json"
+        dest: "{{ weed_conf_dir }}/weed_s3api_users.json"
         mode: "u=rw,g=r,o=" # Contains secrets.
         owner: "{{ user }}"
         group: "{{ group }}"
@@ -301,7 +301,7 @@
                 -v={{ log_level }}
                 -logdir={{ logdir }}/s3api_1
                 s3
-                -config=/etc/seaweedfs/weed_s3api_users.json
+                -config={{ weed_conf_dir }}/weed_s3api_users.json
                 --port=8333
             Install:
               WantedBy: multi-user.target
