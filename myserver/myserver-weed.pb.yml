@@ -164,7 +164,6 @@
         - "/etc/seaweedfs/"
         - "{{ workdir }}"
         - "{{ logdir }}"
-        - "{{ pprof_dir }}"
         ## Master 1
         - "{{workdir}}/master_1/mdir"
         - "{{logdir}}/master_1"
