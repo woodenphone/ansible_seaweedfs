@@ -1,5 +1,5 @@
-## 01_install_seaweedfs_bin.yml
-## Install weed binary.
+## install_seaweedfs_bin_conditional.yml
+## Install weed binary only if appropriate.
 ## Author Ctrl-S
 ---
 - name: "Prep dir(s)"

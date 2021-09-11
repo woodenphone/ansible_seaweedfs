@@ -26,19 +26,18 @@
     workdir: "/etc/weed"
 
     log_level: '3' ## Higher number is more verbose.
-    rack: 'myserver'
-    datacenter: 'mylan'
+    # rack: 'myserver'
+    # datacenter: 'mylan'
 
-    ## 0.x - Install software.
-    ## 01_install_seaweedfs_bin.yml
+    ## install_seaweedfs_bin.yml
     weed_install_work_dir: "/var/seaweedfs/install_weed"
-    weed_latest_release: "2.64"
+    # weed_latest_release: "2.64"
     ## https://github.com/chrislusf/seaweedfs/releases/download/2.52/linux_amd64_large_disk.tar.gz
     ## Check for latest version here: https://github.com/chrislusf/seaweedfs/releases/
 
-    ## 02_install_certgen_bin.yml
+    ## install_certgen_bin.yml
     certstrap_install_work_dir: "/var/seaweedfs/install_certstrap"
-    certstrap_latest_release: 'v1.2.0'
+    # certstrap_latest_release: 'v1.2.0'
 
     ## The locations each volume server's storage will be on; should all be different physical drives:
     ## (Used to ensure volume storage paths are setup to exist with correct permissions.)
@@ -64,10 +63,6 @@
       - "weed_volume_5"
       - "weed_volume_6"
 
-    ## Dynamic vars:
-    dyn_storage_dirs_list: [] ## Generated from volume base paths. (Initialized here, set later.)
-
-
     pre_tasks: # (Run sequentially before roles.)
 ## User & group for seaweedfs
     - name: 'Create seaweedfs group'
@@ -84,18 +79,17 @@
         password: '*' ## Disable login.
         comment: 'SeaweedFS service user.'
         create_home: no
-
+##
 ## Download seaweedfs and certstrap
     - name: 'Install seaweedfs'
       ansible.builtin.include_tasks:
-        file: '01_install_seaweedfs_bin.yml'
-      ignore_errors: "{{ ansible_check_mode }}" # Most items here require files to exist.
-#
-    - name: 'Install certstrap'
-      ansible.builtin.include_tasks:
-        file: '02_install_certstrap_bin.yml'
+        file: 'install_seaweedfs_bin_force.yml'
       ignore_errors: "{{ ansible_check_mode }}" # Most items here require files to exist.
 
+    - name: 'Install certstrap'
+      ansible.builtin.include_tasks:
+        file: 'install_certstrap_bin_force.yml'
+      ignore_errors: "{{ ansible_check_mode }}" # Most items here require files to exist.
 #
 ## Generate help docs (informational use only).
     - name: 'Make dirs for docs'
@@ -191,19 +185,6 @@
         ## FUSE Mounts
         - "/weedmnt/"
 
-      ## Horrible-feeling hack to reduce config file complexity.
-    - name: 'Generate volume dirpaths (Much hack, very ashame) [1]'
-      ansible.builtin.set_fact: dyn_storage_dirs_list=[] ## TODO: TESTME
-    - name: 'Generate volume dirpaths (Much hack, very ashame) [2]'
-      ansible.builtin.set_fact:
-        dyn_storage_dirs_list: >
-          {{ dyn_storage_dirs_list }}
-          + [
-          '{{ item }}/',
-          '{{ item }}/dir',
-          '{{ item }}/idx',
-          ]
-      with_items: "{{ volume_locations }}"
     - name: 'Make dirs for volumes'
       ansible.builtin.file:
         state: 'directory'
@@ -211,7 +192,7 @@
         group: "{{ group }}"
         mode: 'u=rwX,g=rwX,o=rX'
         path: "{{ item }}"
-      with_items: "{{ dyn_storage_dirs_list }}"
+      with_items: "{{ volume_locations }}"
 
 ##
 ## SeaweedFS config TOML
@@ -242,7 +223,7 @@
         group: "{{ group }}"
         backup: yes
 
-
+#
 ## Services for running seaweedfs components
   roles:
     - name: 'Systemd units for seaweedfs'
@@ -370,8 +351,7 @@
                 -disk=hdd
                 -max=128
                 -minFreeSpacePercent=5
-                -dir=/zpools/zpool_01/weed_volume_1/dir
-                -dir.idx=/zpools/zpool_01/weed_volume_1/idx
+                -dir=/zpools/zpool_01/weed_volume_1/
             Install:
               WantedBy: multi-user.target
 #
@@ -396,8 +376,7 @@
                 -disk=hdd
                 -max=128
                 -minFreeSpacePercent=5
-                -dir=/zpools/zpool_02/weed_volume_2/dir
-                -dir.idx=/zpools/zpool_02/weed_volume_2/idx
+                -dir=/zpools/zpool_02/weed_volume_2/
             Install:
               WantedBy: multi-user.target
 #
@@ -447,8 +426,7 @@
                 -disk=hdd
                 -max=128
                 -minFreeSpacePercent=5
-                -dir=/media/drive_04/weed_volume_4/dir
-                -dir.idx=/media/drive_04/weed_volume_4/idx
+                -dir=/media/drive_04/weed_volume_4/
             Install:
               WantedBy: multi-user.target
 #
@@ -473,8 +451,7 @@
                 -disk=hdd
                 -max=128
                 -minFreeSpacePercent=5
-                -dir=/media/drive_05/weed_volume_5/dir
-                -dir.idx=/media/drive_05/weed_volume_5/idx
+                -dir=/media/drive_05/weed_volume_5/
             Install:
               WantedBy: multi-user.target
 #
@@ -499,8 +476,7 @@
                 -disk=hdd
                 -max=128
                 -minFreeSpacePercent=5
-                -dir=/media/drive_06/weed_volume_6/dir
-                -dir.idx=/media/drive_06/weed_volume_6/idx
+                -dir=/media/drive_06/weed_volume_6/
             Install:
               WantedBy: multi-user.target
 #

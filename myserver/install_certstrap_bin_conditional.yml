@@ -1,5 +1,5 @@
 ## 02_install_certstrap_bin.yml
-## Install certstrap binary.
+## Install certstrap binary only if appropriate.
 ---
 - name: "Prep dir(s)"
   ansible.builtin.file:
