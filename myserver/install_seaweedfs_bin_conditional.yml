@@ -1,4 +1,4 @@
-## install_seaweedfs_bin_conditional.yml
+## install_seaweedfs_bin_conditional.task.yml
 ## Install weed binary only if appropriate.
 ## Author Ctrl-S
 ---
@@ -64,11 +64,17 @@
   ansible.builtin.debug:
     var: downloaded_release
 
+- name: 'Decide whether to download weed'
+  ansible.builtin.set_fact:
+    download_weed="{{ ((not downloaded_release.stat.exists) and (not installed_bin.stat.exists)) }}"
+
+- name: 'Does weed need downloading?'
+  ansible.builtin.debug:
+    var: download_weed
+
   ## Only do download and install if not done previously.
 - name: 'weed - bin - download and install'
-  when:
-    - (downloaded_release.stat.exists == False)
-    - (installed_bin.stat.exists == False)
+  when: download_weed
   block:
     - name: 'weed - bin - download'
       ansible.builtin.get_url: ## Download latest binary release.

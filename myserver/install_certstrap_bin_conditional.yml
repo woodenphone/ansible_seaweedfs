@@ -37,12 +37,18 @@
     path: "{{ certstrap_install_work_dir }}/{{ certstrap_filename }}"
   register: downloaded_release
 
+- name: 'Decide whether to download certstrap'
+  ansible.builtin.set_fact:
+    download_certstrap="{{ ((not downloaded_release.stat.exists) and (not installed_bin.stat.exists)) }}"
+
+- name: 'Does certstrap need downloading?'
+  ansible.builtin.debug:
+    var: download_certstrap
+
 
   ## Only do download and install if not done previously.
 - name: 'certstrap - bin - download and install'
-  when:
-    - (downloaded_release.stat.exists == False)
-    - (installed_bin.stat.exists == False)
+  when: download_certstrap
   block:
     - name: "certstrap - bin - download"
       ansible.builtin.get_url: ## Download latest binary release.
